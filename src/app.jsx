@@ -2,14 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { Amplify } from 'aws-amplify';
 import { generateClient } from 'aws-amplify/api';
 
+const appSyncEndpoint = import.meta.env.VITE_APPSYNC_ENDPOINT;
+const appSyncRegion = import.meta.env.VITE_APPSYNC_REGION;
+const appSyncApiKey = import.meta.env.VITE_APPSYNC_API_KEY;
+
+if (!appSyncEndpoint || !appSyncRegion) {
+  throw new Error('Missing VITE_APPSYNC_ENDPOINT or VITE_APPSYNC_REGION environment variables.');
+}
+
 // 1. CẤU HÌNH KẾT NỐI AWS AMPLIFY
 Amplify.configure({
   API: {
     GraphQL: {
-      endpoint: 'https://4lo3abr6w5gdje53agqqqydj7m.appsync-api.ap-southeast-1.amazonaws.com/graphql',
-      region: 'ap-southeast-1',
+      endpoint: appSyncEndpoint,
+      region: appSyncRegion,
       defaultAuthMode: 'apiKey',
-      apiKey: 'da2-j6segfxd5jgvnp4bebuvbcdbga'
+      apiKey: appSyncApiKey
     }
   }
 });
