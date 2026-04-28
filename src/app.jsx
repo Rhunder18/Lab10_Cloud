@@ -5,22 +5,21 @@ import { generateClient } from 'aws-amplify/api';
 const appSyncEndpoint = import.meta.env.VITE_APPSYNC_ENDPOINT;
 const appSyncRegion = import.meta.env.VITE_APPSYNC_REGION;
 const appSyncApiKey = import.meta.env.VITE_APPSYNC_API_KEY;
+const hasAppSyncConfig = Boolean(appSyncEndpoint && appSyncRegion && appSyncApiKey);
 
-if (!appSyncEndpoint || !appSyncRegion) {
-  throw new Error('Missing VITE_APPSYNC_ENDPOINT or VITE_APPSYNC_REGION environment variables.');
-}
-
-// 1. CẤU HÌNH KẾT NỐI AWS AMPLIFY
-Amplify.configure({
-  API: {
-    GraphQL: {
-      endpoint: appSyncEndpoint,
-      region: appSyncRegion,
-      defaultAuthMode: 'apiKey',
-      apiKey: appSyncApiKey
+if (hasAppSyncConfig) {
+  // 1. CẤU HÌNH KẾT NỐI AWS AMPLIFY
+  Amplify.configure({
+    API: {
+      GraphQL: {
+        endpoint: appSyncEndpoint,
+        region: appSyncRegion,
+        defaultAuthMode: 'apiKey',
+        apiKey: appSyncApiKey
+      }
     }
-  }
-});
+  });
+}
 
 const client = generateClient();
 
@@ -64,6 +63,10 @@ export default function App() {
   const [senderName, setSenderName] = useState('User1');
 
   useEffect(() => {
+    if (!hasAppSyncConfig) {
+      return;
+    }
+
     // Tải danh sách tin nhắn cũ khi vừa mở app
     fetchMessages();
 
@@ -89,6 +92,24 @@ export default function App() {
     // Đóng kết nối khi component bị unmount
     return () => subscription.unsubscribe();
   }, []);
+
+  if (!hasAppSyncConfig) {
+    return (
+      <div className="chat-app setup-warning">
+        <header className="chat-header">
+          <h2>AWS AppSync Real-Time Chat</h2>
+          <div className="header-sub">Missing environment variables</div>
+        </header>
+
+        <main className="chat-main">
+          <div className="setup-card">
+            <p>AppSync config is not set yet.</p>
+            <p>Create a <code>.env.local</code> file with <code>VITE_APPSYNC_ENDPOINT</code>, <code>VITE_APPSYNC_REGION</code>, and <code>VITE_APPSYNC_API_KEY</code>.</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   // Hàm gọi API lấy lịch sử tin nhắn
   const fetchMessages = async () => {
